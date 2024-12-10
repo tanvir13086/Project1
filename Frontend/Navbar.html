@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Navigation Component</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <style>
+        .navbar {
+            color: #f5f6fa;
+            background: rgb(15, 12, 12);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #e74c3c;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: #ecf0f4;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: #e37453;
+        }
+        
+        .cart-link {
+            display: flex;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .cart-count {
+            position:absolute; 
+            color: rgb(247, 243, 243);
+            border-radius: 50%;
+            padding: 3px;
+            background-color: rgb(5, 156, 71);
+            margin-bottom: 25px; 
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 0.5rem 0;
+            min-width: 150px;
+            display: none;
+        }
+        
+        .user-dropdown.active {
+            display: block;
+        }
+        
+        .dropdown-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: #232e3a;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .dropdown-link:hover {
+            background: #4058b7;
+        }
+        
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3278a7;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .auth-button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .signin-button {
+            background: #057bc9;
+            color: white;
+            border: 1px solid #e8edf0;
+        }
+        
+        .signin-button:hover {
+            background: #2980b9;
+        }
+        
+        .signup-button {
+            background: #057bc9;
+            color: white;
+            border: 1px solid #e8edf0;
+        }
+        
+        .signup-button:hover {
+            background: #4c88c5;
+        }
+        
+        .admin-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .dropdown-section {
+            border-bottom: 1px solid #eee;
+            padding: 0.5rem 0;
+        }
+        
+        .dropdown-section:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-title {
+            padding: 0.5rem 1rem;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">BookStore</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/products.html" class="nav-link">Products</a>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/cart.html" id="cartButton" class="cart-link">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span><p class="cart-count">0</p></span>
+                </a>
+
+                <!-- Guest View (not logged in) -->
+                <div class="auth-buttons" id="guestMenu">
+                    <a href="/signin.html" class="auth-button signin-button">Sign In</a>
+                    <a href="/signup.html" class="auth-button signup-button">Sign Up</a>
+                </div>
+
+                <!-- User Menu (logged in) -->
+                   <div class="user-menu" id="userMenu" style="display: none;">
+                    <div class="nav-link user-trigger">
+                        <span class="profile-icon">G</span>
+                        <span class="user-name">Guest</span>
+                        <span class="admin-badge" id="adminBadge" style="display: none;">Admin</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <!-- Regular User Section -->
+                        <div class="dropdown-section">
+                            <a href="/MyProfile.html" class="dropdown-link">Profile</a>
+                            <a href="/MyOrder.html" class="dropdown-link">My Orders</a>
+                        </div>
+
+                        <!-- Admin Section -->
+                        <div class="dropdown-section" id="adminSection" style="display: none;">
+                            <div class="dropdown-title">Admin Controls</div>
+                            <a href="/admin/monitor-checkout.html" class="dropdown-link">Monitor Checkouts</a>
+                            <a href="/admin/users.html" class="dropdown-link">Manage Users</a>
+                            <a href="/admin/addproduct.html" class="dropdown-link">Add Product</a>
+                        </div>
+
+                        <!-- Logout Section -->
+                        <div class="dropdown-section">
+                            <a href="#" class="dropdown-link" id="logoutBtn">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+
+</html>

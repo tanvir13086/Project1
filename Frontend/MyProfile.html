@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | BookStore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .profile-field {
+            margin-bottom: 20px;
+        }
+
+        .profile-field label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .profile-field span {
+            display: block;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        #logout {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Profile</h1>
+        <div id="profileContainer"></div>
+        <button id="logout">Logout</button>
+    </div>
+
+    <script>
+        class ProfileManager {
+            constructor() {
+                this.profileContainer = document.getElementById("profileContainer");
+                this.init();
+            }
+
+            async init() {
+                if (!this.isUserLoggedIn()) {
+                    window.location.href = "/signin.html";
+                    return;
+                }
+
+                await this.loadProfile();
+                document.getElementById("logout").addEventListener("click", this.logout);
+            }
+
+            isUserLoggedIn() {
+                return !!sessionStorage.getItem("userData");
+            }
+
+            async loadProfile() {
+                try {
+                    const userData = JSON.parse(sessionStorage.getItem("userData"));
+                    const response = await fetch("http://localhost:3000/api/profile", {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "userid": userData.id,
+                        },
+                        credentials: "include",
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to load profile");
+                    }
+
+                    const data = await response.json();
+                    this.renderProfile(data.data);
+                } catch (error) {
+                    console.error("Error loading profile:", error);
+                    this.profileContainer.innerHTML = `<p>An error occurred while loading your profile. Please try again later.</p>`;
+                }
+            }
+
+            renderProfile(user) {
+                this.profileContainer.innerHTML = `
+                    <div class="profile-field">
+                        <label>ID:</label>
+                        <span>${user.id}</span>
+                    </div>
+                    <div class="profile-field">
+                        <label>Name:</label>
+                        <span>${user.name}</span>
+                    </div>
+                    <div class="profile-field">
+                        <label>Email:</label>
+                        <span>${user.email}</span>
+                    </div>
+                `;
+            }
+
+            logout() {
+                sessionStorage.removeItem("userData");
+                window.location.href = "/signin.html";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => new ProfileManager());
+    </script>
+</body>
+</html>

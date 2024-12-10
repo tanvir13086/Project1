@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | BookStore</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding-top: 80px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        /* Order Card */
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .order-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .order-info {
+            flex-grow: 1;
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Products Section */
+        .products-list {
+            padding: 1.5rem;
+        }
+
+        .product-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.5rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .product-details h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .product-author {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .product-price {
+            text-align: right;
+        }
+
+        .price-per-unit {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shipping-address {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .total-amount {
+            text-align: right;
+        }
+
+        .total-label {
+            color: #7f8c8d;
+            margin-bottom: 0.25rem;
+        }
+
+        .total-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state h2 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .empty-state p {
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+
+        .shop-now-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+
+        .shop-now-btn:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation placeholder -->
+    <div id="navbar"></div>
+
+    <div class="container">
+        <div id="orderContent">
+            <!-- Content will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Footer placeholder -->
+    <div id="footer"></div>
+
+    <!-- Navigation and footer manager -->
+    <script type="module" src="/js/navfoot.js"></script>
+
+    <script>
+        class OrdersManager {
+            constructor() {
+                this.orderContent = document.getElementById('orderContent');
+                this.init();
+            }
+
+            async init() {
+                if (!this.isLoggedIn()) {
+                    window.location.href = '/signin.html';
+                    return;
+                }
+
+                await this.loadOrders();
+            }
+
+            isLoggedIn() {
+                return !!sessionStorage.getItem('userData');
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            async loadOrders() {
+                try {
+                    const response = await fetch('http://localhost:3000/api/products/myorders', {
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load orders');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.data.orders.length === 0) {
+                        this.renderEmptyState();
+                    } else {
+                        this.renderOrders(data.data);
+                    }
+                } catch (error) {
+                    console.error('Error loading orders:', error);
+                    this.renderError();
+                }
+            }
+
+            renderOrders(data) {
+                const { orders, statistics } = data;
+
+                this.orderContent.innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${statistics.totalOrders}</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                        ${Object.entries(statistics.statusCounts).map(([status, count]) => `
+                            <div class="stat-card">
+                                <div class="stat-value">${count}</div>
+                                <div class="stat-label">${status.charAt(0).toUpperCase() + status.slice(1)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    ${orders.map(order => this.renderOrderCard(order)).join('')}
+                `;
+            }
+
+            renderOrderCard(order) {
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-info">
+                                <div class="order-id">Order #${order.orderId}</div>
+                                <div class="order-date">${this.formatDate(order.orderDate)}</div>
+                            </div>
+                            <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span>
+                        </div>
+
+                        <div class="products-list">
+                            ${order.products.map(product => `
+                                <div class="product-item">
+                                    <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
+                                    <div class="product-details">
+                                        <h3>${product.name}</h3>
+                                        <div class="product-author">by ${product.authors}</div>
+                                        <div>Quantity: ${product.quantity}</div>
+                                    </div>
+                                    <div class="product-price">
+                                        <div>$${product.totalPrice.toFixed(2)}</div>
+                                        <div class="price-per-unit">$${product.pricePerUnit.toFixed(2)} each</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="order-summary">
+                            <div class="shipping-address">
+                                <strong>Shipping to:</strong><br>
+                                ${order.shippingAddress.fullName}<br>
+                                ${order.shippingAddress.address}<br>
+                                ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}
+                            </div>
+                            <div class="total-amount">
+                                <div class="total-label">Order Total</div>
+                                <div class="total-value">$${order.orderSummary.totalAmount.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderEmptyState() {
+                this.orderContent.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No Orders Yet</h2>
+                        <p>Start shopping to create your first order</p>
+                        <a href="/" class="shop-now-btn">Shop Now</a>
+                    </div>
+                `;
+            }
+
+            renderError() {
+                this.orderContent.innerHTML = `
+                    <div class="empty-state">
+                        <h2>Oops!</h2>
+                        <p>Something went wrong while loading your orders</p>
+                        <button onclick="location.reload()" class="shop-now-btn">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            new OrdersManager();
+        });
+    </script>
+</body>
+</html>
